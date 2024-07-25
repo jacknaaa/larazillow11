@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listing;
 use App\Http\Requests\StoreListingRequest;
 use App\Http\Requests\UpdateListingRequest;
+use App\Models\Listing;
 
 class ListingController extends Controller
 {
@@ -13,7 +13,12 @@ class ListingController extends Controller
      */
     public function index()
     {
-        //
+        // dd(Listing::all());
+        return inertia('Listing/Index',
+            [
+                'listings' => Listing::all(),
+            ]
+        );
     }
 
     /**
@@ -21,7 +26,7 @@ class ListingController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Listing/Create');
     }
 
     /**
@@ -29,7 +34,24 @@ class ListingController extends Controller
      */
     public function store(StoreListingRequest $request)
     {
-        //
+        // dd($request->all());
+
+        // Listing::create($request->all());
+        Listing::create(
+            $request->validate([
+                'beds' => 'required|integer|min:0|max:20',
+                'baths' => 'required|integer|min:0|max:20',
+                'area' => 'required|integer|min:15|max:1500',
+                'city' => 'required',
+                'code' => 'required',
+                'street' => 'required',
+                'street_nr' => 'required|min:1|max:1000',
+                'price' => 'required|integer|min:1|max:20000000',
+            ])
+        );
+
+        return redirect()->route('listing.index')
+            ->with('success', 'Listing was created!');
     }
 
     /**
@@ -37,7 +59,11 @@ class ListingController extends Controller
      */
     public function show(Listing $listing)
     {
-        //
+        return inertia('Listing/Show',
+            [
+                'listing' => $listing,
+            ]
+        );
     }
 
     /**
@@ -45,7 +71,12 @@ class ListingController extends Controller
      */
     public function edit(Listing $listing)
     {
-        //
+        return inertia(
+            'Listing/Edit',
+            [
+                'listing' => $listing,
+            ]
+        );
     }
 
     /**
@@ -53,7 +84,21 @@ class ListingController extends Controller
      */
     public function update(UpdateListingRequest $request, Listing $listing)
     {
-        //
+        $listing->update(
+            $request->validate([
+                'beds' => 'required|integer|min:0|max:20',
+                'baths' => 'required|integer|min:0|max:20',
+                'area' => 'required|integer|min:15|max:1500',
+                'city' => 'required',
+                'code' => 'required',
+                'street' => 'required',
+                'street_nr' => 'required|min:1|max:1000',
+                'price' => 'required|integer|min:1|max:20000000',
+            ])
+        );
+
+        return redirect()->route('listing.index')
+            ->with('success', 'Listing was changed!');
     }
 
     /**
@@ -61,6 +106,9 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
-        //
+        $listing->delete();
+
+        return redirect()->back()
+            ->with('success', 'Listing was deleted!');
     }
 }
