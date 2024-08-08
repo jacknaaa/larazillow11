@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreListingRequest;
 use App\Http\Requests\UpdateListingRequest;
 use App\Models\Listing;
+use Illuminate\Support\Facades\Gate;
+
+
+
 
 class ListingController extends Controller
 {
+    public function __construct()
+    {
+        // $this->authorizeResource(Listing::class, 'listing');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -26,6 +34,8 @@ class ListingController extends Controller
      */
     public function create()
     {
+       
+        Gate::authorize('create', Listing::class);
         return inertia('Listing/Create');
     }
 
@@ -34,10 +44,11 @@ class ListingController extends Controller
      */
     public function store(StoreListingRequest $request)
     {
+        
         // dd($request->all());
 
         // Listing::create($request->all());
-        Listing::create(
+        $request->user()->listings()->create(
             $request->validate([
                 'beds' => 'required|integer|min:0|max:20',
                 'baths' => 'required|integer|min:0|max:20',
@@ -59,6 +70,20 @@ class ListingController extends Controller
      */
     public function show(Listing $listing)
     {
+        // if (Gate::forUser($user)->allows('update-post', $post)) {
+        //     // The user can update the post...
+        // }
+         
+        // if (Gate::forUser($user)->denies('update-post', $post)) {
+        //     // The user can't update the post...
+        // }
+        // if(Auth::user()->cannot('view', $listing)){
+        //     abort(403);
+        // }
+        // $this->authorize('view', $listing);
+
+        Gate::authorize('view', $listing);
+
         return inertia('Listing/Show',
             [
                 'listing' => $listing,
@@ -71,6 +96,7 @@ class ListingController extends Controller
      */
     public function edit(Listing $listing)
     {
+        Gate::authorize('update', $listing);
         return inertia(
             'Listing/Edit',
             [
@@ -106,6 +132,7 @@ class ListingController extends Controller
      */
     public function destroy(Listing $listing)
     {
+        Gate::authorize('delete', $listing);
         $listing->delete();
 
         return redirect()->back()
